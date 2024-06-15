@@ -15,6 +15,7 @@ import 'react-tabs/style/react-tabs.css';
 import SongsList from './SongsList'
 import SongDetails from './SongDetails'
 import MyItemsList from './SongsList'
+import UploadForm from '../uploadfile/page'
 
 
 interface Song {
@@ -50,7 +51,7 @@ const AllTunes = () => {
 
     {/* *********** My Songs **********/} 
     const [allSongs, setAllSongs] = useState([
-        { id: 1, title: 'AllTunes initial song', artist: 'AllTunes', album: 'R-Hackathon', year: 2024 },
+        { id: 1, title: 'Loading ...', artist: 'AllTunes', album: 'R-Hackathon', year: 2024 },
     ]);
 
     useEffect(() => {
@@ -339,7 +340,7 @@ const AllTunes = () => {
                     <br></br>
                     <h2 className="font-bold text-lg mb-2">Section for Artists</h2>
                     <br></br>
-                    <p>TODO: Upload file fonctionnality.</p>
+                    <UploadForm />
                 </div>
             )}
         </div>
