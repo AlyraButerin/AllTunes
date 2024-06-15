@@ -16,6 +16,7 @@ import SongsList from './SongsList'
 import SongDetails from './SongDetails'
 import MyItemsList from './SongsList'
 import UploadForm from '../uploadfile/page'
+import { readContractByFunctionName } from '../utils'
 
 
 interface Song {
@@ -143,6 +144,38 @@ const AllTunes = () => {
     const [showProfessionalContent, setShowProfessionalContent] = useState(true);
     const [showArtistContent, setShowArtistContent] = useState(true);
 
+
+
+    {/* *********** Interact with contract **********/} 
+
+    const [baseURI, setBaseURI] = useState<string>('');
+
+    const handleClick = async () => {
+        const result = await getAdmin(addressA);
+        setBaseURI(result);
+    };
+
+    // AllFeat blockchain
+    const contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"ISRCRegistry_InvalideCode","type":"error"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"}],"name":"ISRCRegistry_NotBound","type":"error"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"address","name":"user","type":"address"}],"name":"ISRCRegistry_buyAllowanceFailed","type":"error"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"buyAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"getAdmin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"}],"name":"getISRCSpec","outputs":[{"components":[{"internalType":"uint256","name":"minPrice","type":"uint256"},{"internalType":"address","name":"artistAddress","type":"address"},{"internalType":"bool","name":"isBound","type":"bool"}],"internalType":"structISRCRegistry.ISRCSpec","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"address","name":"user","type":"address"}],"name":"getUserUsage","outputs":[{"components":[{"internalType":"uint256","name":"listenDuration","type":"uint256"},{"internalType":"enumISRCRegistry.UserMode","name":"mode","type":"uint8"},{"internalType":"enumISRCRegistry.Allowance","name":"allowanceType","type":"uint8"}],"internalType":"structISRCRegistry.Usage","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"code","type":"string"},{"internalType":"address","name":"artist","type":"address"}],"name":"mockedCheckISRCValidity","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"uint256","name":"minPrice","type":"uint256"}],"name":"setNewISRC","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"uint256","name":"minPrice","type":"uint256"}],"name":"updateISRC","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+    const contractAddress = '0xb615089f5e0ACd56Fb48FC83045cada9b97F2f92';
+    const addressA = '0x3D8Fc853978ee4D7A40cD682F0E7E7289216C494';
+    const network = "Allfeat";
+    const functionName = "getAdmin";
+
+    const getAdmin = async (address: `0x${string}`): Promise<string> => {
+        return readContractByFunctionName<string>(
+            functionName,
+            contractABI,
+            contractAddress,
+            addressA, 
+            network,
+        ).then(baseURI => baseURI)
+        .catch((err) => {
+            console.log(err)
+            return ""
+        })
+    }
+
     return (
     <Section
       className="pt-[12rem] -mt-[5.25rem]"
@@ -153,6 +186,23 @@ const AllTunes = () => {
     >
 
     <div>
+        
+        <div>
+            <button
+                onClick={handleClick}
+                className="bg-blue-500 text-white px-2 py-1 rounded"
+            >
+                Read a Contract (Test)
+            </button>
+            {baseURI && (
+                <div>
+                    <p>Base Token URI: {baseURI}</p>
+                </div>
+            )}
+        </div>
+
+        <br></br>
+
         <button className="btn btn-info" onClick={() => setShowProfessionalContent(!showProfessionalContent)}>
             Switch Listener / Artist 
         </button>
