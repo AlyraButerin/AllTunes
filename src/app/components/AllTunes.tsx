@@ -45,38 +45,46 @@ const AllTunes = () => {
 
     const musicMetadata = require('music-metadata-browser');
 
-    /* (async () => {
+    {/* *********** Read loaded MP3 files **********/} 
+    const [mp3s, setFiles] = useState<string[]>([]);
 
-        try {
-            const response = await fetch('public/music/God.mp3');
-            if (!response.ok) {
-              throw new Error(`Failed to fetch file: ${response.statusText}`);
-            }
-            const blob = await response.blob();
-            const metadata = await mm.parseBlob(blob);
-            console.log(metadata.common); // Affiche les métadonnées communes
-          } catch (error) {
-            console.error('Error parsing file:', error);
-          }
-          
-      }
-    )(); */
-
-    
     {/* *********** My Songs **********/} 
-    const allSongs = [
-    { id: 1, title: 'Song A', artist: 'Artist A', album: 'Album A', year: 2020 },
-    { id: 2, title: 'Song B', artist: 'Artist B', album: 'Album B', year: 2021 },
-    { id: 3, title: 'Song C', artist: 'Artist C', album: 'Album C', year: 2022 },
-    ];
+    const [allSongs, setAllSongs] = useState([
+        { id: 1, title: 'AllTunes initial song', artist: 'AllTunes', album: 'R-Hackathon', year: 2024 },
+    ]);
+
+    useEffect(() => {
+        const fetchFiles = async () => {
+            const response = await fetch('/api/files');
+            console.log("response tmp:", response);
+            if (response.ok) {
+                const data = await response.json();
+                console.log("data tmp:", data);
+                // setFiles(data);
+
+                // Update allSongs with the fetched MP3 files
+                const newSongs = data.map((file: any, index: number) => ({
+                    id: allSongs.length + index + 1, // Generate a new id
+                    title: file, // Assuming file name is the title
+                    artist: 'Unknown Artist', // Placeholder artist
+                    album: 'Unknown Album', // Placeholder album
+                    year: new Date().getFullYear(), // Current year as placeholder
+                }));
+                setAllSongs(newSongs);
+            } else {
+                console.error('Failed to fetch mp3s');
+            }
+        };
+
+        fetchFiles();
+    }, []);
     
     const initialMySongs: Song[] | (() => Song[]) = [];
-
     const [selectedSong, setSelectedSong] =  useState<Song | null>(null);
     const [mySongs, setMySongs] = useState<Song[]>(initialMySongs);
 
     const handleSongClick = (song: Song) => {
-    setSelectedSong(song);
+        setSelectedSong(song);
     };
 
     const handleBuySong = (song: Song) => {
@@ -130,28 +138,9 @@ const AllTunes = () => {
     }
     };
 
-    
-    {/* *********** Read loaded MP3 files **********/} 
-    const [files, setFiles] = useState<string[]>([]);
-    
-    useEffect(() => {
-        const fetchFiles = async () => {
-            const response = await fetch('/api/files');
-            console.log("response tmp:", response);
-            if (response.ok) {
-                const data = await response.json();
-                console.log("data tmp:", response);
-                setFiles(data);
-            } else {
-                console.error('Failed to fetch files');
-            }
-        };
-
-        fetchFiles();
-    }, []);
-
     {/* *********** Toggle Perso / Pro **********/} 
-    const [showFirstContent, setShowFirstContent] = useState(true);
+    const [showProfessionalContent, setShowProfessionalContent] = useState(true);
+    const [showArtistContent, setShowArtistContent] = useState(true);
 
     return (
     <Section
@@ -163,10 +152,18 @@ const AllTunes = () => {
     >
 
     <div>
-        <button className="btn btn-info" onClick={() => setShowFirstContent(!showFirstContent)}>
-            Switch Pro/Perso
+        <button className="btn btn-info" onClick={() => setShowProfessionalContent(!showProfessionalContent)}>
+            Switch Listener / Artist 
         </button>
-        {showFirstContent ? (
+        {showProfessionalContent ? (
+
+            <div>
+            <br></br>
+            <button className="btn btn-info" onClick={() => setShowArtistContent(!showArtistContent)}>
+                Switch Professional / Individual
+            </button>
+            {showArtistContent ? (
+
                 <div>
                     <br></br>
                     <h2 className="font-bold text-lg mb-2">Section for Individuals</h2>
@@ -326,23 +323,23 @@ const AllTunes = () => {
 
                     </Tabs>
 
-                    {/* READ MP3 SECTION */}
-
-                    <div>
-                    <h2 className="font-bold text-lg mb-2">Available titles (loaded by the artists)</h2>
-                    <ul>
-                        {files.map((file, index) => (
-                        <li key={index}>{file}</li>
-                        ))}
-                    </ul>
-                    </div>
                 </div>
+                ) : (
+                    <div>
+                        <br></br>
+                        <h2 className="font-bold text-lg mb-2">Section for Professionals</h2>
+                        <br></br>
+                        <p>The Pro Section of AllTunes offers a copyright payment mechanism similar to that of SACEM. In this section, you pay to access and listen to all content for a specified period.</p>
+                    </div>
+                )}
+                </div>
+
             ) : (
                 <div>
                     <br></br>
-                    <h2 className="font-bold text-lg mb-2">Section for Professionals</h2>
+                    <h2 className="font-bold text-lg mb-2">Section for Artists</h2>
                     <br></br>
-                    <p>The Pro Section of AllTunes offers a copyright payment mechanism similar to that of SACEM.</p>
+                    <p>TODO: Upload file fonctionnality.</p>
                 </div>
             )}
         </div>
