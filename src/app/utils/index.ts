@@ -21,8 +21,9 @@ import {
   GetLogsReturnType,
   parseAbiItem,
 } from "viem";
-import { readContract, writeContract, simulateContract } from "@wagmi/core";
+import { readContract, writeContract, simulateContract  } from "@wagmi/core";
 import { allfeat, clientHarmony, config, sepolia } from "./config";
+import { getChainId } from "wagmi/actions";
 
 const formattedError = (err: any): Error => {
   if (err instanceof BaseError) {
@@ -57,7 +58,7 @@ export const readContractByFunctionName = async <T>(
   ...args: `0x${string}`[] | any[]
 ): Promise<T> => {
 
-    let chainId = allfeat.id
+    let chainId = allfeat.id;
     
     if (network === "sepolia") {
         chainId = sepolia.id
@@ -88,25 +89,42 @@ export const readContractByFunctionName = async <T>(
 // console.log('result', result)
 
 export const writeContractByFunctionName = async (
-  abi: [],
+  abi: any,
   contractAddress: `0x${string}`,
   functionName: string,
+  network: string,
   ...args: `0x${string}`[] | any[]
 ): Promise<`0x${string}`> => {
-  try {
+  
+  //let chainId = allfeat.id
+    
+  //if (network === "sepolia") {
+  //    chainId = sepolia.id
+  //}
+
+  //console.log('chainnn:', getChainId(config));
+  console.log('abi:', abi);
+  console.log('contractAddress:', contractAddress);
+ // console.log('chainId:', chainId);
+  console.log('args:', args);
+  
+   try {
     const { request } = await simulateContract(config, {
       abi: abi,
       address: contractAddress,
       functionName: functionName,
+      //chainId: chainId,
       args: args,
     });
+
+    console.log('End.');
 
     const hash = await writeContract(config, request);
 
     return hash;
   } catch (err) {
     throw formattedError(err);
-  }
+  } 
 };
 
 export const readEvents = async (

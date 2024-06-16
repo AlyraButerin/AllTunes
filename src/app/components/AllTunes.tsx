@@ -16,8 +16,11 @@ import SongsList from './SongsList'
 import SongDetails from './SongDetails'
 import MyItemsList from './SongsList'
 import UploadForm from '../uploadfile/page'
-import { readContractByFunctionName } from '../utils'
+import { readContractByFunctionName, writeContractByFunctionName } from '../utils'
 
+import dotenv from 'dotenv';
+import { ethers } from 'ethers'
+dotenv.config();
 
 interface Song {
     id: number;
@@ -148,33 +151,117 @@ const AllTunes = () => {
 
     {/* *********** Interact with contract **********/} 
 
-    const [baseURI, setBaseURI] = useState<string>('');
-
-    const handleClick = async () => {
-        const result = await getAdmin(addressA);
-        setBaseURI(result);
-    };
-
     // AllFeat blockchain
     const contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"ISRCRegistry_InvalideCode","type":"error"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"}],"name":"ISRCRegistry_NotBound","type":"error"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"address","name":"user","type":"address"}],"name":"ISRCRegistry_buyAllowanceFailed","type":"error"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"buyAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"getAdmin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"}],"name":"getISRCSpec","outputs":[{"components":[{"internalType":"uint256","name":"minPrice","type":"uint256"},{"internalType":"address","name":"artistAddress","type":"address"},{"internalType":"bool","name":"isBound","type":"bool"}],"internalType":"structISRCRegistry.ISRCSpec","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"address","name":"user","type":"address"}],"name":"getUserUsage","outputs":[{"components":[{"internalType":"uint256","name":"listenDuration","type":"uint256"},{"internalType":"enumISRCRegistry.UserMode","name":"mode","type":"uint8"},{"internalType":"enumISRCRegistry.Allowance","name":"allowanceType","type":"uint8"}],"internalType":"structISRCRegistry.Usage","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"code","type":"string"},{"internalType":"address","name":"artist","type":"address"}],"name":"mockedCheckISRCValidity","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"uint256","name":"minPrice","type":"uint256"}],"name":"setNewISRC","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"ISRCCode","type":"string"},{"internalType":"uint256","name":"minPrice","type":"uint256"}],"name":"updateISRC","outputs":[],"stateMutability":"nonpayable","type":"function"}];
     const contractAddress = '0xb615089f5e0ACd56Fb48FC83045cada9b97F2f92';
-    const addressA = '0x3D8Fc853978ee4D7A40cD682F0E7E7289216C494';
+    const myAddress = '0x351677eadECE6b446Cc2A71A428c137233c68C52';
     const network = "Allfeat";
-    const functionName = "getAdmin";
+
+    {/* *********** GetAdmin function **********/} 
+    const getAdminFunctionName = "getAdmin";
+    const [admin, setAdmin] = useState<string>('');
+
+    const getAdminClick = async () => {
+        const result = await getAdmin(myAddress);
+        setAdmin(result);
+    };
 
     const getAdmin = async (address: `0x${string}`): Promise<string> => {
         return readContractByFunctionName<string>(
-            functionName,
+            getAdminFunctionName,
             contractABI,
             contractAddress,
-            addressA, 
+            myAddress, 
             network,
-        ).then(baseURI => baseURI)
+        ).then(admin => admin)
         .catch((err) => {
             console.log(err)
             return ""
         })
     }
+
+    {/* *********** buyAllowance function **********/} 
+    const buyAllowanceFunctionName = "buyAllowance";
+    const [isBuyAllowance, setIsBuyAllowance] = useState<string>('');
+    const isrc = 'GBQS21200001';
+    // const tokenAddress = '';
+    // const amount = '';
+    const tokenAddress = '0xB6A475AE1495E938410B1f9D81b121a80B562428';
+    const amount = 1000000000000000n;
+
+    const buyAllowanceClick = async () => {
+        const result = await buyAllowanceEthers(isrc, tokenAddress, amount);
+        setIsBuyAllowance(result);
+    };
+
+    const buyAllowance = async (address: `0x${string}`): Promise<string> => {
+        return writeContractByFunctionName(
+            contractABI,
+            contractAddress,
+            buyAllowanceFunctionName,
+            "Allfeat",
+            isrc, 
+            tokenAddress,
+            amount,
+        ).then(admin => admin)
+        .catch((err) => {
+            console.log(err)
+            return ""
+        })
+    }
+
+    {/* *********** buyAllowance function Using ethers **********/} 
+
+    const infura_rpc =`${process.env.NEXT_PUBLIC_INFURA_RPC}` as `0x${string}`;
+
+    async function buyAllowanceEthers(isrc: any, tokenAddress: any, amount: any) {
+        try {
+            // Initialize provider and signer (you may need to adjust this according to your setup)
+
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            // It will prompt user for account connections if it isnt connected
+            const signer = await provider.getSigner();
+            console.log("Account:", await signer.getAddress());
+
+
+            /*console.log("infura_rpc:", infura_rpc);
+            const provider = new ethers.JsonRpcProvider(infura_rpc);
+            console.log("provider:", provider);
+            //const signer = await provider.getSigner(myAddress); // Make sure the signer is correctly set up
+    */
+            // Create contract instance
+            const contract = new ethers.Contract(contractAddress, contractABI, signer);
+            console.log("contract.");
+            // Define the function name
+            const buyAllowanceFunctionName = "buyAllowance"; // Replace with the actual function name if different
+    
+            // Call the function
+            // const tx = await contract["buyAllowance(string, address, uint256)"](isrc, tokenAddress, amount);
+            // const tx = await contract["buyAllowance"](isrc, tokenAddress, amount);
+            const tx = await contract.buyAllowance(isrc, tokenAddress, amount, { value: ethers.parseEther("0.1") });
+            console.log("Tx:", tx);
+            // Wait for the transaction to be mined
+            const receipt = await tx.wait();
+    
+            return receipt;
+        } catch (err) {
+            console.log(err);
+            return "";
+        }
+    }
+    
+    //const address = "0xYourAddress";
+    //const isrc = "exampleIsrc";
+    //const tokenAddress = "0xYourTokenAddress";
+    //const amount = ethers.utils.parseUnits("1", 18); // Adjust the amount and decimals accordingly
+    
+    buyAllowanceEthers(isrc, tokenAddress, amount)
+        .then((receipt) => {
+            console.log("Transaction successful:", receipt);
+        })
+        .catch((err) => {
+            console.log("Transaction failed:", err);
+        });
 
     return (
     <Section
@@ -187,18 +274,22 @@ const AllTunes = () => {
 
     <div>
         
+     {/* *********** GetAdmin btn **********/} 
         <div>
-            <button
-                onClick={handleClick}
-                className="bg-blue-500 text-white px-2 py-1 rounded"
-            >
-                Read a Contract (Test)
+            <button onClick={getAdminClick} className="bg-blue-500 text-white px-2 py-1 rounded">
+                Display Contract Admin
             </button>
-            {baseURI && (
-                <div>
-                    <p>Base Token URI: {baseURI}</p>
-                </div>
-            )}
+            {admin && (<div> <p>Contract Admin: {admin}</p></div>)}
+        </div>
+
+        <br></br>
+
+     {/* *********** buyAllowance btn **********/} 
+        <div>
+            <button onClick={buyAllowanceClick} className="bg-blue-500 text-white px-2 py-1 rounded">
+                Buy Allowance
+            </button>
+            {admin && (<div> <p>Buy success: {isBuyAllowance}</p></div>)}
         </div>
 
         <br></br>

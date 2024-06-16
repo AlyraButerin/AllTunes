@@ -1,6 +1,8 @@
 import { Chain } from "@rainbow-me/rainbowkit";
-import { http, createConfig } from "@wagmi/core";
 import { createPublicClient } from "viem";
+import { http, createConfig } from "@wagmi/core";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider } from 'wagmi'
 import {
   Harmony,
   HarmonyTestnet,
