@@ -79,3 +79,4 @@ Front:
 - raimbow kit
 
 Server:
+- python / RabbitMQ
